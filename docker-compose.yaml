@@ -1,0 +1,36 @@
+version: '3.8'
+services:
+  vault-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - vault_data:/app/db
+      - vault_files:/app/vault_files
+      - vault_sessions:/app/sessions
+    environment:
+      - FLASK_ENV=production
+    depends_on:
+      - db-init
+    networks:
+      - vault-network
+
+  db-init:
+    image: python:3.9-slim
+    volumes:
+      - vault_data:/app/db
+    command: >
+      sh -c "python -c 'import sqlite3; conn = sqlite3.connect(\"/app/db/vault.db\"); conn.close()'"
+    networks:
+      - vault-network
+
+volumes:
+  vault_data:
+  vault_files:
+  vault_sessions:
+
+networks:
+  vault-network:
+    driver: bridge
